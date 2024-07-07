@@ -1,240 +1,313 @@
+
+
 #include <iostream>
 using namespace std;
-class chesspiece
+
+template <class T>
+class matrix
 {
-    string name;
-    string color;
-    char symbol;
+protected:
+    int rows;
+    int cols;
+   
 
 public:
-    chesspiece() : name("pawn"), color("white"), symbol('p')
+ T **arr;
+    matrix(int r, int c)
     {
+        rows = r;
+        cols = c;
+        arr = new T *[rows];
+        for (int i = 0; i < rows; i++)
+        {
+            arr[i] = new T[cols];
+        }
+    }
+    ~matrix()
+    {
+        for (int i = 0; i < rows; i++)
+        {
+            delete[] arr[i];
+        }
+        delete[] arr;
+    }
+    void input()
+    {
+        cout << "Enter the elements of the matrix:" << endl;
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < cols; j++)
+            {
+                cin >> arr[i][j];
+            }
+        }
+    }
+    virtual void display()
+    {
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < cols; j++)
+            {
+                cout << arr[i][j] << " "<<" \t";
+            }
+            cout << endl;
+        }
     }
 
-    chesspiece(string name, string color, char symbol) : name(name), color(color), symbol(symbol) {}
-
-    string getname()
+    matrix<T>* operator+(const matrix<T> &other) const
     {
-        return name;
+        if (rows == other.rows && cols == other.cols)
+        {
+
+            matrix<T>* temp=new matrix<T>(rows, cols);
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    temp->arr[i][j] = arr[i][j] + other.arr[i][j];
+                }
+            }
+            return temp;
+        }
+        else
+        {
+            cout << "Addition not possible" << endl;
+            matrix<T>* temp=new matrix<T>(rows, cols);
+            {
+                for (int i = 0; i < rows; i++)
+                {
+                    for (int j = 0; j < cols; j++)
+                    {
+                        temp->arr[i][j] = 0;
+                    }
+                }
+            }
+            return temp;
+        }
     }
-
-    string getcolor()
+    matrix<T>* operator-(const matrix<T> &other) const
     {
-        return color;
+        if (rows == other.rows && cols == other.cols)
+        {
+            matrix<T>* temp=new matrix<T>(rows, cols);
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    temp->arr[i][j] = arr[i][j] - other.arr[i][j];
+                }
+            }
+            return temp;
+        }
+        else
+        {
+            cout << "Subtraction not possible" << endl;
+            matrix<T>* temp=new matrix<T>(rows, cols);
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    temp->arr[i][j] = 0;
+                }
+            }
+            return temp;
+        }
     }
-
-    char getsymbol()
+    matrix<T>* operator*(const matrix<T> &other) const
     {
-        return symbol;
-    }
-
-    void setname(string name)
-    {
-        this->name = name;
-    }
-
-    void setcolor(string color)
-    {
-        this->color = color;
-    }
-
-    void setsymbol(char symbol)
-    {
-        this->symbol = symbol;
+        if (cols != other.rows)
+        {
+            cout << "Multiplication not possible" << endl;
+            matrix<T>* temp=new matrix<T>(rows, other.cols);
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < other.cols; j++)
+                {
+                    temp->arr[i][j] = 0;
+                }
+            }
+            return temp;
+        }
+        else
+        {
+            matrix<T>* temp=new matrix<T>(rows, cols);
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < other.cols; j++)
+                {
+                    for (int k = 0; k < cols; k++)
+                    {
+                        temp->arr[i][j] += arr[i][k] * other.arr[k][j];
+                    }
+                }
+            }
+            return temp;
+        }
     }
 };
 
-class chessboard
+template <class T>
+class IntMatrix : public matrix<T>
 {
-    chesspiece *board[8][8];
-
 public:
-    chessboard()
+    IntMatrix(int r, int c) : matrix<T>(r, c)
     {
-        for (int i = 0; i < 8; i++)
+    }
+    void display() 
+    {
+        matrix<T>::display();
+    }
+     IntMatrix<T> operator+(const IntMatrix<T> &other) const
+    {
+        const matrix<T>* temp = static_cast<const matrix<T>*>(this) -> operator+(other);
+        IntMatrix<T> result(this->rows, this->cols);
+        for (int i = 0; i < this->rows; i++)
         {
-            for (int j = 0; j < 8; j++)
+            for (int j = 0; j < this->cols; j++)
             {
-                board[i][j] = nullptr;
+                result.arr[i][j] = temp->arr[i][j];
             }
         }
-        board[0][0] = new chesspiece("rook", "black", 'R');
-        board[0][1] = new chesspiece("knight", "black", 'N');
-        board[0][2] = new chesspiece("bishop", "black", 'B');
-        board[0][3] = new chesspiece("queen", "black", 'Q');
-        board[0][4] = new chesspiece("king", "black", 'K');
-        board[0][5] = new chesspiece("bishop", "black", 'B');
-        board[0][6] = new chesspiece("knight", "black", 'N');
-        board[0][7] = new chesspiece("rook", "black", 'R');
-
-        for (int i = 0; i < 8; i++)
-        {
-            board[1][i] = new chesspiece("pawn", "black", 'P');
-        }
-
-        board[7][0] = new chesspiece("rook", "white", 'r');
-        board[7][1] = new chesspiece("knight", "white", 'n');
-        board[7][2] = new chesspiece("bishop", "white", 'b');
-        board[7][3] = new chesspiece("queen", "white", 'q');
-        board[7][4] = new chesspiece("king", "white", 'k');
-        board[7][5] = new chesspiece("bishop", "white", 'b');
-        board[7][6] = new chesspiece("knight", "white", 'n');
-        board[7][7] = new chesspiece("rook", "white", 'r');
-
-        for (int i = 0; i < 8; i++)
-        {
-            board[6][i] = new chesspiece("pawn", "white", 'p');
-        }
+        delete temp;
+        return result;
     }
+     IntMatrix<T> operator*(const IntMatrix<T> &other) const
+    {
+        matrix<T>* temp = static_cast<const matrix<T> *>(this)->operator*(other);
+        IntMatrix<T> result(this->rows, this->cols);
+        for (int i = 0; i < this->rows; i++)
+        {
+            for (int j = 0; j < this->cols; j++)
+            {
+                result.arr[i][j] = temp->arr[i][j];
+            }
+        }
+        return result;
+    }
+    IntMatrix<T> operator-(const IntMatrix<T> &other) const
+    {
+        const matrix<T>* temp = static_cast<const matrix<T>*>(this) -> operator-(other);
+        IntMatrix<T> result(this->rows, this->cols);
+        for (int i = 0; i < this->rows; i++)
+        {
+            for (int j = 0; j < this->cols; j++)
+            {
+                result.arr[i][j] = temp->arr[i][j];
+            }
+        }
+        delete temp;
+        return result;
+    }
+};
 
+template <class T>
+class doubleMatrix : public matrix<T>
+{
+    public:
+    doubleMatrix(int r, int c) : matrix<T>(r, c)
+    {}
     void display()
     {
-        cout<<"mohid raheel khan 23k-3000"<<endl;
-        cout<<"___________________________________________________________________________"<<endl;
-        cout << "\ta\tb\tc\td\te\tf\tg\th\n"
-             << endl;
-
-        for (int i = 0; i < 8; i++)
-        {
-            cout << 8 - i ;
-            for (int j = 0; j < 8; j++)
-            {
-                if (board[i][j] == nullptr)
-                {
-                    board[i][j] = nullptr;
-                    cout << "\t"
-                         << " ";
-                }
-                else
-                {
-                    cout << "\t" << board[i][j]->getsymbol() << " ";
-                }
-            }
-            cout << "\t" << 8 - i<<"\n" << endl;
-        }
-
-        cout << "\ta\tb\tc\td\te\tf\tg\th" << endl;
-        cout << "_______________________________________________________________________" << endl;
+        matrix<T>::display();
     }
-
-    bool movepiece(string source, string destination)
+    doubleMatrix<T> operator+(const doubleMatrix<T> &other) const
     {
-
-        int row = source[1] - '0' - 1;
-        int column = source[0] - 'a';
-        int finalrow = destination[1] - '0' - 1;
-        int finalcolumn = destination[0] - 'a';
-
-        if (board[row][column] == nullptr)
+        const matrix<T>* temp = static_cast<const matrix<T>*>(this) -> operator+(other);
+        doubleMatrix<T> result(this->rows, this->cols);
+        for (int i = 0; i < this->rows; i++)
         {
-            cout << "no piece at source position" << endl;
-            return false;
-        }
-
-        if (board[finalrow][column] != nullptr)
-        {
-            cout << "destination position is occupied" << endl;
-            return false;
-        }
-
-        char symbol = board[column][row]->getsymbol();
-        string color = board[column][row]->getcolor();
-
-        switch (symbol)
-        {
-        case 'p':
-        case 'P':
-        {
-            if (color == "white")
+            for (int j = 0; j < this->cols; j++)
             {
-
-                if (column == finalcolumn && (row - 1 == finalrow)||(row-2==finalrow))
-                {
-                    
-                    board[finalrow][finalcolumn] = board[row][column];
-                    board[row][column] = nullptr;
-                    display();
-                    cout << "valid move" << endl;
-                    return true;
-                }
-                else
-                {
-                    cout << "invalid move" << endl;
-                    return false;
-                }
-            }
-            else
-            {
-
-                if (column == finalcolumn && (row + 1 == finalrow)||(row+2==finalrow))
-                {
-                   
-
-                    board[finalrow][finalcolumn] = board[row][column];
-                    board[row][column] = nullptr;
-                    display();
-                     cout << "valid move" << endl;
-                    return true;
-                }
-                else
-                {
-                    cout << "invalid move" << endl;
-                    return false;
-                }
+                result.arr[i][j] = temp->arr[i][j];
             }
         }
-        break;
-
-        case 'N':
-        case 'n':
+        delete temp;
+        return result;
+    }
+    doubleMatrix<T> operator*(const doubleMatrix<T> &other) const
+    {
+        matrix<T>* temp = static_cast<const matrix<T> *>(this)->operator*(other);
+        doubleMatrix<T> result(this->rows, this->cols);
+        for (int i = 0; i < this->rows; i++)
         {
-            if (color == "white")
+            for (int j = 0; j < this->cols; j++)
             {
-                int rowchange = abs(finalrow - row);
-                int columnchange = abs(finalcolumn - column);
-                if ((rowchange == 2 && columnchange == 1) || (rowchange == 1 && columnchange == 2))
-                {
-                     board[finalrow][finalcolumn] = board[row][column];
-                    board[row][column] = nullptr;
-                    display();
-                    cout << "valid move" << endl;
-                    return true;
-                }
-                else
-                {
-                    cout << "invalid move" << endl;
-                    return false;
-                }
-            }
-            else
-            {
-                int rowchange = abs(finalrow - row);
-                int columnchange = abs(finalcolumn - column);
-                if ((rowchange == 2 && columnchange == 1) || (rowchange == 1 && columnchange == 2))
-                {
-                     board[finalrow][finalcolumn] = board[row][column];
-                    board[row][column] = nullptr;
-                    display();
-                    cout << "valid move" << endl;
-                    return true;
-                }
-                else
-                {
-                    cout << "invalid move" << endl;
-                    return false;
-                }
+                result.arr[i][j] = temp->arr[i][j];
             }
         }
-        break;
+        return result;
+    }
+    doubleMatrix<T> operator-(const doubleMatrix<T> &other) const
+    {
+        const matrix<T>* temp = static_cast<const matrix<T>*>(this) -> operator-(other);
+        doubleMatrix<T> result(this->rows, this->cols);
+        for (int i = 0; i < this->rows; i++)
+        {
+            for (int j = 0; j < this->cols; j++)
+            {
+                result.arr[i][j] = temp->arr[i][j];
+            }
         }
+        delete temp;
+        return result;
     }
 };
 
 int main()
 {
-    chessboard board;
-    board.display();
-    board.movepiece("b2", "b3");
-    board.movepiece("g8","f6");
+    IntMatrix<int> m1(2, 2);
+    m1.input();
+    m1.display();
+    IntMatrix<int> m2(2, 2);
+    m2.input();
+    m2.display();
+    IntMatrix<int> m3(2,2);
+    
+    m3 = m1 + m2;
+    cout<<"_______________________________________________________________"<<endl;
+    cout<<"Addition"<<endl;
+    m3.display();
+    
+    m3=m1*m2;
+    cout<<"_______________________________________________________________"<<endl;
+    cout<<"Multiplication"<<endl;
+    m3.display();
+     
+
+    m3=m1-m2;
+    cout<<"_______________________________________________________________"<<endl;
+    cout<<"Subtraction"<<endl;
+    m3.display();
+
+
+    cout<<"double"<<endl;
+    doubleMatrix<double> m4(3, 3);
+    m4.input();
+    m4.display();
+
+    doubleMatrix<double> m5(3, 3);
+    m5.input();
+    m5.display();
+    doubleMatrix<double> m6(3,3);
+    
+    m6 = m4 + m5;
+    cout<<"_______________________________________________________________"<<endl;
+    cout<<"Addition"<<endl;
+    m6.display();
+    
+    m6=m4*m5;
+    cout<<"_______________________________________________________________"<<endl;
+    cout<<"Multiplication"<<endl;
+    m6.display();
+
+    m6=m4-m5;
+    cout<<"_______________________________________________________________"<<endl;
+    cout<<"Subtraction"<<endl;
+    m6.display();
+
+
+
+
+    
     return 0;
 }
