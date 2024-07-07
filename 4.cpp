@@ -1,224 +1,188 @@
 #include <iostream>
 #include <cmath>
 using namespace std;
-class rollercoaster
+
+class drone
 {
-    string name;
-    double height;
-    double length;
-    double speed;
-    int capacity;
-    double current_passenger;
-    bool currently_inprogress;
+protected:
+    float latitude;
+    float longitude;
+    float altitude;
+    float speed;
 
 public:
-    rollercoaster() : name("rollercoaster"), height(500), length(2000), capacity(20), currently_inprogress(false), speed(0), current_passenger(0) {}
-
-    rollercoaster(string n, double h, double l, int c, double sp ) : name(n), height(h), length(l), speed(sp), currently_inprogress(false)
+    drone(float latitude, float longitude, float altitude, float speed)
     {
+        this->latitude = latitude;
+        this->longitude = longitude;
+        this->altitude = altitude;
+        this->speed = speed;
+    }
+    virtual void adjustAltitude(float meters) = 0;
 
-        if (c % 2 != 0 && c % 3 != 0)
+    virtual void setSpeed(float speed) = 0;
+};
+class flyable
+{
+public:
+    virtual void takeoff(float altitude, float speed, float longitude, float latitude) = 0;
+    virtual void land() = 0;
+    virtual void navigateTo(float latitude, float longitude, float altitude) = 0;
+};
+
+class scannable
+{
+public:
+    virtual void scanArea(float radius) = 0;
+};
+
+class recondrone : public flyable, public scannable, public drone
+{
+    float cameraresolution;
+    float maxflighttime;
+
+public:
+    recondrone(float latitude, float longitude, float altitude, float speed, float cameraresolution, float maxflighttime) : drone(latitude, longitude, altitude, speed)
+    {
+        this->cameraresolution = cameraresolution;
+        this->maxflighttime = maxflighttime;
+    }
+    void setlatitude(float latitude)
+    {
+        this->latitude = latitude;
+    }
+    void setlongitude(float longitude)
+    {
+        this->longitude = longitude;
+    }
+    void setSpeed(float speed)
+    {
+        try
         {
-            round(c / 2);
-        }
-
-        if (c < 3)
-        {
-            c = 3;
-        }
-    }
-
-    void set_name(string n)
-    {
-        name = n;
-    }
-
-    string get_name()
-    {
-        return name;
-    }
-
-    void set_height(double h)
-    {
-        height = h;
-    }
-
-    double get_height()
-    {
-        return height;
-    }
-
-    void set_length(double l)
-    {
-        length = l;
-    }
-
-    double get_length()
-    {
-        return length;
-    }
-
-    void set_capacity(int c)
-    {
-        if (c % 2 != 0 || c % 3 != 0)
-        {
-            round(c / 2);
-        }
-
-        if (c < 3)
-        {
-            c = 3;
-        }
-        capacity = c;
-    }
-
-    int get_capacity()
-    {
-        return capacity;
-    }
-
-    void set_speed(double sp)
-    {
-        speed = sp;
-    }
-
-    double get_speed()
-    {
-        return speed;
-    }
-
-    void set_currently_inprogress(bool i)
-    {
-        currently_inprogress = i;
-    }
-
-    bool get_currently_inprogress()
-    {
-        return currently_inprogress;
-    }
-   
-
-    double get_current_passenger()
-    {
-        return current_passenger;
-    }
-
-    int load(int n)
-    {
-        int m;
-        if (get_currently_inprogress() != true)
-        {
-            if (get_capacity() == n)
+            if (speed < 0)
             {
-                current_passenger = n;
-                cout << "every one is seated successfully"<<endl;
-                return 0;
+                throw invalid_argument("Invalid speed");
             }
             else
             {
-                if(get_capacity()> n)
+                this->speed = speed;
+            }
+        }
+        catch (invalid_argument &e)
+        {
+            cout << e.what() << endl;
+        }
+    }
+    void adjustAltitude(float meters) override
+    {
+        try
+        {
+            if (meters < 0)
+            {
+                throw invalid_argument("Invalid altitude");
+            }
+            else
+            {
+                this->altitude += meters;
+            }
+        }
+        catch (invalid_argument &e)
+        {
+            cout << e.what() << endl;
+        }
+    }
+
+    void takeoff(float altitude, float speed, float longitude, float latitude) override
+    {
+        cout << "Takingoff" << endl;
+        adjustAltitude(altitude);
+        setSpeed(speed);
+        setlongitude(longitude);
+        setlatitude(latitude);
+        cout << "altitude:" << altitude << endl;
+        cout << "speed:" << speed << endl;
+        cout << "longitude:" << longitude << endl;
+        cout << "latitude:" << latitude << endl;
+    }
+    void land() override
+    {
+        cout << "landing" << endl;
+        altitude = 0;
+        speed = 0;
+        longitude = 0;
+        latitude = 0;
+        cout << "altitude:" << altitude << endl;
+        cout << "speed:" << speed << endl;
+        cout << "longitude:" << longitude << endl;
+        cout << "latitude:" << latitude << endl;
+    }
+    void navigateTo(float latitude, float longitude, float altitude) override
+    {
+        double distance;
+        distance = sqrt(pow(longitude - this->longitude, 2) + pow(altitude - this->altitude, 2));
+        cout << "distance left:" << distance << endl;
+        float time;
+        time = distance / speed;
+        cout << "time to reach target:" << time << endl;
+    }
+    void scanArea(float radius) override
+    {
+        int num;
+        srand(time(NULL));
+        try
+        {
+            num = rand() % 10;
+            if ((num == 0))
+            {
+                throw runtime_error("signal lost");
+            }
+            else
+            {
+                if (radius == 0)
                 {
-                    current_passenger = n;
-                    m=get_capacity()-current_passenger;
-                    cout << "few seats are empty:"<<m<<endl;
-                    return 1;
+                    throw invalid_argument("drone crashed");
                 }
                 else
                 {
-                    m=n-get_capacity();
-                    current_passenger =n-m;
-                    cout << "not enough seats "<<endl;
-                    cout<<"these are left:"<<m<<endl;
-                    return 2;
+                    int num = rand() % 10 + 1;
+                    cout << "number of objects in our way:" << num << endl;
+                    for (int i = 0; i < num; i++)
+                    {
+                        cout << "Coordinates of object no. " << i+1 << endl;
+                        cout << "latitude:" << abs((latitude + (rand() % 20)) - radius) << endl;
+                        cout << "longitude:" << abs((longitude + (rand() % 20)) - radius) << endl;
+                        cout << "altitude:" << abs((altitude + (rand() % 20)) - radius) << endl;
+                        cout<<endl;
+                    }
                 }
             }
-
+        }
+        catch (runtime_error &e)
+        {
+            cout << e.what() << endl;
+        }
+        catch (invalid_argument &e)
+        {
+            cout << e.what() << endl;
         }
     }
-
-    void start(int n)
-    {
-        if (get_currently_inprogress() == false)
-        {
-            set_speed(50);
-        
-            load(n);
-            set_currently_inprogress(true);
-        }
-        else
-        {
-            cout << "the ride is already in progress"<<endl;
-        }
-    }
-
-    void stop()
-    {
-        if(get_currently_inprogress() ==true)
-        {
-            set_currently_inprogress(false);
-            cout << "the ride is stopped"<<endl;
-            unload();
-        }
-    }
-
-    void unload()
-    {
-        if(get_currently_inprogress()!=true)
-        {
-             current_passenger=0;
-             cout << "everyone is unloaded"<<endl;
-        }
-        else
-        {
-            cout << "the ride is in progress"<<endl;
-        }
-    }
-
-    void accelerate()
-    {
-        int rollnumber=3000;
-        while(rollnumber>=10)
-        {
-            rollnumber=rollnumber/10;
-        }
-        speed=speed+rollnumber;
-        set_speed(speed);
-        cout<<"new speed is "<<get_speed()<<endl;
-
-    }
-
-    void decelerate()
-    {
-        int rollnumber=3000;
-        while(rollnumber>=10)
-        {
-            rollnumber=rollnumber/10;
-        }
-        speed=speed-rollnumber;
-        set_speed(speed);
-        cout<<"new speed is "<<get_speed()<<endl;
-    }
-}
-;
-
+};
 int main()
 {
-    cout<<"mohid raheel khan 23k-3000"<<endl;
-    rollercoaster r1;
-    r1.start(5);
-    r1.accelerate();
-    r1.stop();
-   
-    cout<<endl;
-    rollercoaster r2("ride of heaven",1000,2500,30,0);
-    r2.set_capacity(30);
-    r2.start(30);
-    r2.accelerate();
-    r2.accelerate();
-    r2.decelerate();
-    r2.stop();
+    recondrone d1(0, 0, 0, 0, 1080, 3600);
 
-     
+    d1.takeoff(300, 200, 100, 100);
+    cout << endl;
+    cout << "______________________________________________________________" << endl;
+    d1.navigateTo(200, 200, 300);
+    cout << endl;
+    cout << "______________________________________________________________" << endl;
+    d1.scanArea(100);
+    cout << endl;
+    cout << "______________________________________________________________" << endl;
+    d1.land();
+    cout << endl;
+    cout << "______________________________________________________________" << endl;
 
     return 0;
 }
