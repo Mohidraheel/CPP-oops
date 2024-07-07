@@ -1,0 +1,47 @@
+#include <iostream>
+using namespace std;
+
+class office
+{
+    int seating;
+    string location;
+    string *furniture;
+
+public:
+    office(int n)
+    {
+        furniture = new string[n];
+        for (int i = 0; i < n; i++)
+        {
+            cout << "enter furniture name = ";
+            getline(cin, furniture[i]);
+        }
+        cout << "enter location = ";
+        getline(cin, location);
+        cout << "enter seating capacity = ";
+        cin >> seating;
+    }
+
+    void display()
+    {
+        cout << "office location = " << location << endl;
+        cout << "office seating capacity = " << seating << endl;
+        for (int i = 0; i < 3; i++)
+        {
+            cout << "furniture name = " << furniture[i] << endl;
+        }
+    }
+
+    ~office()
+    {
+        delete[] furniture;
+    }
+};
+int main()
+{
+    office *o1 = new office(3);
+    o1->display();
+    delete o1;
+
+    return 0;
+}
